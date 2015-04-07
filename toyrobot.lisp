@@ -1,16 +1,23 @@
 #!/usr/bin/clisp
-(defstruct robot x y facing)
-(defstruct table llx lly urx ury)
+(defstruct robot location facing table)
+(defstruct table llc urc)
+(defstruct point x y)
 
 (defun move (robot &optional (rspeed 1)) 
-  (with-slots (x y facing) robot
-    (place (+ x (* rspeed (round (cos (* pi facing)))))
-           (+ y (* rspeed (round (sin (* pi facing)))))
-           facing)))
+  (with-slots (location facing table) robot
+      (if (on (lookingat location facing rspeed) table) 
+        (place (lookingat location facing rspeed) facing table)
+        robot
+        )))
+
+(defun lookingat (location facing rspeed)
+  (with-slots (x y) location
+    (make-point :x (+ x (* rspeed (round (cos (* pi facing)))))
+                :y (+ y (* rspeed (round (sin (* pi facing))))))))
 
 (defun turn (robot fn rotation)
-  (with-slots (x y facing) robot
-    (place x y (mod (funcall fn facing rotation) 2))))
+  (with-slots (location facing table) robot
+    (place location (mod (funcall fn facing rotation) 2) table)))
 
 (defun left (robot &optional (rotation 0.5))
     (turn robot #'+ rotation))
@@ -19,12 +26,13 @@
     (turn robot #'- rotation))
 
 (defun report (robot)
-  (with-slots (x y facing) robot
+  (with-slots (location facing) robot
+    (with-slots (x y) location
       (format t "~d,~d,~a~%" x y facing)
-      robot))
+      robot)))
 
-(defun place (x y facing)
-  (make-robot :x x :y y :facing facing))
+(defun place (location facing table)
+  (make-robot :location location :facing facing :table table))
 
 (defparameter *dirs* (make-hash-table :size 4))
 (setf (gethash 'EAST *dirs*) '0)
@@ -33,12 +41,16 @@
 (setf (gethash 'SOUTH *dirs*) '1.5)
 
 (defparameter *robot* ())
-(defparameter *table* (make-table :llx 0 :lly 0 :urx 4 :ury 4))
+(defparameter *table* (make-table :llc (make-point :x 0 :y 0) :urc (make-point :x 4 :y 4)))
 
-(defun contains (table robot) 
-  (and (<= 0 1)(<= 0 1)(>= 4 3)(>= 4 3)))
+(defun on (point table)
+  (with-slots (x y) point
+  (with-slots (llc urc) table
+  (with-slots ((llx x) (lly y)) llc
+  (with-slots ((urx x) (ury y)) urc 
+  (and (<= llx x)(<= lly y)(>= urx x)(>= ury y)))))))
 
-(setf *robot* (place 0 0 0))
+(setf *robot* (place (make-point :x 0 :y 0) 0 *table*))
 
 (with-open-file (input "examples/example6.txt")
    (loop for line = (read-line input nil)
