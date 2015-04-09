@@ -1,38 +1,42 @@
-;;#!/usr/bin/clisp
-(ql:quickload :cl-ppcre)
-(load "robot.lisp")
-(in-package :cl-user)
+;;;; toyrobot.lisp
 
-(defpackage :com.lauchlin.toyrobot
-  (:use :common-lisp)
-
-
-(in-package :com.lauchlin.toyrobot)
+(in-package #:toyrobot)
 
 ;; Robot and Table structs
 (defstruct table llx lly urx ury)
 
 (setf *commands* "MOVELEFTRIGHTREPORTPLACE")
 (defparameter *dirs* (make-hash-table :size 4))
-(setf (gethash 'EAST *dirs*) '0)
-(setf (gethash 'NORTH *dirs*) '0.5)
-(setf (gethash 'WEST *dirs*) '1)
-(setf (gethash 'SOUTH *dirs*) '1.5)
+(setf (gethash "EAST" *dirs*) '0)
+(setf (gethash "NORTH" *dirs*) '0.5)
+(setf (gethash "WEST" *dirs*) '1)
+(setf (gethash "SOUTH" *dirs*) '1.5)
 
 ;; Input, validation main loop
-(defun place (robot args)
+(defun place (r args)
   (let ((direction (gethash (intern (subseq args (+ (search "," args :from-end t) 1))) *dirs*)))
-    (if (not (null direction ))
-      (com.lauchlin.robot:place robot 1 1 direction))))
+    (if (not (null direction))
+      (place-robot r 1 1 direction)
+      r)))
 
-(defparameter *robot* ())
-(defparameter *table* (make-table :llx 0 :lly 0 :urx 4 :ury 4))
+(defun move (r args)
+  (move-robot r))
 
-(setf *robot* (com.lauchlin.robot:place *robot* 0 0 0 *table*))
+(defun left (r args)
+  (right-robot r))
 
-#|(with-open-file (input "examples/example6.txt")
-  (loop for line = (read-line input nil)
-        while line do
-        (let ((command (subseq line 0 (search " " line))))
-          (let ((arguments (if (equal command line) () (subseq line (search " " line)))))
-            (if (search command *commands*) (setf *robot* (funcall (intern command) *robot* arguments)))))))#|
+(defun right (r args)
+  (left-robot r))
+
+(defun report (r args)
+  (report-robot r))
+
+(defun run-toyrobot ()
+  (let ((thetable (make-table :llx 0 :lly 0 :urx 4 :ury 4)))
+  (let ((therobot (make-robot :x 0 :y 0 :facing 0 :table thetable)))
+  (with-open-file (input "examples/example6.txt")
+    (loop for line = (read-line input nil)
+          while line do
+          (let ((command (subseq line 0 (search " " line))))
+            (let ((arguments (if (equal command line) () (subseq line (search " " line)))))
+              (if (search command *commands*) (setf therobot (funcall (intern command :toyrobot) therobot arguments))))))))))

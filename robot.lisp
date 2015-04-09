@@ -1,51 +1,44 @@
 ;;Robot Structure
-(in-package :cl-user)
-
-(defpackage :com.lauchlin.robot
-  (:use :common-lisp)
-  (:export #:place))
-
-(in-package :com.lauchlin.robot)
+(in-package #:toyrobot)
 
 (defstruct robot x y facing &optional table (fspeed 1) (rspeed 0.5))
 
 ;;Robot functions
 
-(defun move (robot &rest args) 
-  (with-slots (x y facing table) robot
-    (if (on (lookingat robot) table) 
-      (lookingat robot)
-      robot
-      )))
+(defun move-robot (r) 
+  (if (on-table (in-front-of r)) 
+    (in-front-of r)
+    r
+    ))
 
-(defun report (robot &rest args)
-  (with-slots (x y facing) robot
+(defun report-robot (r)
+  (with-slots (x y facing) r
     (format t "~d,~d,~a~%" x y facing)
-    robot))
+    r))
 
-(defun place (robot x y facing &optional (table (robot-table robot)))
+(defun place-robot (r x y facing &optional (table (robot-table r)))
   (make-robot :x x :y y :facing facing :table table))
 
-(defun left (robot &rest args)
-  (turn robot #'+))
+(defun left-robot (r)
+  (turn-robot r #'+))
 
-(defun right (robot &rest args)
-  (turn robot #'-))
+(defun right-robot (r)
+  (turn-robot r #'-))
 
 ;;Helper functions
 
-(defun turn (robot fn)
-  (with-slots (x y facing rspeed) robot
-    (place robot x y (mod (funcall fn facing rspeed) 2))))
+(defun turn-robot (r fn)
+  (with-slots (x y facing rspeed) r
+    (place-robot r x y (mod (funcall fn facing rspeed) 2))))
 
-(defun on (robot table)
-  (with-slots (x y) robot
+(defun on-table (r)
+  (with-slots (x y table) r
     (with-slots (llx lly urx ury) table
       (and table (<= llx x)(<= lly y)(>= urx x)(>= ury y)))))
 
-(defun lookingat (robot)
-  (with-slots (x y facing table fspeed) robot
-    (place robot (+ x (* fspeed (cos (* pi facing))))
+(defun in-front-of (r)
+  (with-slots (x y facing fspeed) r
+    (place-robot r (+ x (* fspeed (cos (* pi facing))))
             (+ y (* fspeed (sin (* pi facing))))
             facing)))
 
