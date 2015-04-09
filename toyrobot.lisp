@@ -7,10 +7,6 @@
 ;; Table structs
 (defstruct table llx lly urx ury)
 
-;; Input validation stuff
-(defun validcommand? (command) 
-    (search command "MOVELEFTRIGHTREPORTPLACE"))
-
 (defun finddirection (direction)
   (case (intern direction :toyrobot)
     ('EAST 0)
@@ -27,33 +23,33 @@
     (1.5 "SOUTH")
     (otherwise nil)))
 
-;; place has arguments so split them out and send them
-(defun place (r args)
-  (let ((direction (finddirection (subseq args (+ (search "," args :from-end t) 1)))))
-    (if (not (null direction))
-      (place-robot r 1 1 direction)
-      r)))
+(defun sendcommand (r command arguments)
+  (if (equal arguments nil)
+    ;; No user supplied arguments
+    (case (intern command :toyrobot)
+      ('MOVE (move-robot r))
+      ('LEFT (left-robot r))
+      ('RIGHT (right-robot r))
+      ('REPORT (report-robot r #'lookup) r)
+      (otherwise r))
+    ;; User supplied arguments
+    (case (intern command :toyrobot)
+      ('PLACE
+        (setf (values x y direction) (values-list (cl-ppcre:split "," arguments :limit 3)))
+        (setf x (parse-integer x :junk-allowed t))
+        (setf y (parse-integer y :junk-allowed t))
+        (setf direction (finddirection direction))
+        (if (notany #'null (list x y direction)) 
+          (place-robot r x y direction)
+          r))
+      (otherwise r))))
 
-;; other commands don't have any arguments
-(defun move (r args)
-  (move-robot r))
-
-(defun left (r args)
-  (left-robot r))
-
-(defun right (r args)
-  (right-robot r))
-
-(defun report (r args)
-  (report-robot r #'lookup)
-  r)
-
-(defun run-toyrobot (file)
-  (let ((thetable (make-table :llx 0 :lly 0 :urx 4 :ury 4)))
-    (let ((therobot (make-robot :table thetable)))
-    (with-open-file (input file)
+(defun test-file (file)
+  (let ((robot (make-robot :table (make-table :llx 0 :lly 0 :urx 4 :ury 4))))
+     (with-open-file (input file)
       (loop for line = (read-line input nil)
           while line do
-          (let ((command (subseq line 0 (search " " line))))
-            (let ((arguments (if (equal command line) () (subseq line (search " " line)))))
-              (if (validcommand? command) (setf therobot (funcall (intern command :toyrobot) therobot arguments))))))))))
+            (setf (values command arguments) (values-list (cl-ppcre:split " " line :limit 2)))
+            (setf robot (sendcommand robot command arguments)))))
+              (values))
+

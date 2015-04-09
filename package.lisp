@@ -3,5 +3,6 @@
 
 (defpackage #:toyrobot
   (:use #:cl)
-  (:export #:run-toyrobot))
+  (:export #:run-toyrobot
+           #:test-file))
 
