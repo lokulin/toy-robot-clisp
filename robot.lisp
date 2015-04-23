@@ -2,15 +2,15 @@
 (in-package #:toyrobot)
 
 (defstruct robot x y facing &optional table (fspeed 1) (rspeed 0.5))
-(setf (symbol-function `toleft) (symbol-function `+))
-(setf (symbol-function `toright) (symbol-function `-))
+(setf (symbol-function `toleft) (symbol-function `-))
+(setf (symbol-function `toright) (symbol-function `+))
 
 ;;Robot functions
 
 (defun move-robot (r) (if (placed? r) (forward r) r))
 
 (defun report-robot (r lookup)
-  (if (placed? r) (with-slots (x y facing) r 
+  (if (placed? r) (with-slots (x y facing) r
     (format t "~d,~d,~a~%" (round x) (round y) (lookup facing))) r ))
 
 (defun place-robot (r x y facing &optional (table (robot-table r)))
@@ -29,8 +29,8 @@
 
 (defun forward (r)
   (with-slots (x y facing fspeed) r
-    (place-robot r (+ x (* fspeed (cos (* pi facing))))
-            (+ y (* fspeed (sin (* pi facing))))
+    (place-robot r (+ x (* fspeed (sin (* pi facing))))
+            (+ y (* fspeed (cos (* pi facing))))
             facing)))
 
 (defun on-table? (x y table)

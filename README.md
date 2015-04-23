@@ -1,7 +1,7 @@
 Toy Robot
 =========
 
-Toy Robot is a work in progress, common lisp implementation of a toy robot simulator conforming to the specifications in the [problem description](PROBLEM.md).
+Toy Robot is a work in progress, common lisp implementation of a toy robot simulator mostly conforming to the specifications in the [problem description](PROBLEM.md).
 
 Installing
 ----------
@@ -30,8 +30,6 @@ git clone git@github.com:lokulin/toy-robot-clisp.git ~/src/clisp/toy-robot/
 Running
 -------
 
-To run the toy robot, using the clisp REPL inside the source directory:
 ```
-(ql:quickload :toyrobot)
-(toyrobot:run-toyrobot)
+./run.lisp examples/example1.tst
 ```

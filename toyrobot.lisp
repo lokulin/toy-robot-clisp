@@ -9,18 +9,18 @@
 
 (defun finddirection (direction)
   (case (intern direction :toyrobot)
-    ('EAST 0)
-    ('NORTH 0.5)
-    ('WEST 1)
-    ('SOUTH 1.5)
+    ('NORTH 0.0)
+    ('EAST 0.5)
+    ('SOUTH 1.0)
+    ('WEST 1.5)
     (otherwise nil)))
 
 (defun lookup (direction)
-  (case direction 
-    (0.0 "EAST")
-    (0.5 "NORTH")
-    (1.0 "WEST")
-    (1.5 "SOUTH")
+  (case direction
+    (0.0 "NORTH")
+    (0.5 "EAST")
+    (1.0 "SOUTH")
+    (1.5 "WEST")
     (otherwise nil)))
 
 (defun sendcommand (r command arguments)
@@ -39,7 +39,7 @@
         (setf x (parse-integer x :junk-allowed t))
         (setf y (parse-integer y :junk-allowed t))
         (setf direction (finddirection direction))
-        (if (notany #'null (list x y direction)) 
+        (if (notany #'null (list x y direction))
           (place-robot r x y direction)
           r))
       (otherwise r))))
